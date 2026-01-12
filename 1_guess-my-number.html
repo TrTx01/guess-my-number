@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guess My Number</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    .numbers {
+      margin: 20px 0;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    button {
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Think of a number between 1 and 63</h2>
+<p>Answer YES or NO</p>
+
+<div class="numbers" id="numbers"></div>
+
+<button onclick="answer(true)">YES</button>
+<button onclick="answer(false)">NO</button>
+
+<h3 id="result"></h3>
+
+<script>
+  const cards = [
+    { value: 1, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&1) },
+    { value: 2, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&2) },
+    { value: 4, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&4) },
+    { value: 8, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&8) },
+    { value: 16, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&16) },
+    { value: 32, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&32) }
+  ];
+
+  let index = 0;
+  let total = 0;
+
+  function showCard() {
+    if (index < cards.length) {
+      document.getElementById("numbers").innerText =
+        cards[index].nums.join(", ");
+    } else {
+      document.getElementById("numbers").innerText = "";
+      document.getElementById("result").innerText =
+        "Your number is: " + total + " 🎉";
+    }
+  }
+
+  function answer(yes) {
+    if (yes) total += cards[index].value;
+    index++;
+    showCard();
+  }
+
+  showCard();
+</script>
+
+</body>
+</html>
