@@ -1,54 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Guess My Number</title>
 
-</head>
-<body>
-
-<h2>Think of a number between 1 and 63</h2>
-<p>Answer YES or NO</p>
-
-<div class="numbers" id="numbers"></div>
-
-<button onclick="answer(true)">YES</button>
-<button onclick="answer(false)">NO</button>
-
-<h3 id="result"></h3>
-
-<script>
-  const cards = [
-    { value: 1, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&1) },
-    { value: 2, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&2) },
-    { value: 4, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&4) },
-    { value: 8, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&8) },
-    { value: 16, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&16) },
-    { value: 32, nums: [...Array(63)].map((_,i)=>i+1).filter(n=>n&32) }
-  ];
-
-  let index = 0;
-  let total = 0;
-
-  function showCard() {
-    if (index < cards.length) {
-      document.getElementById("numbers").innerText =
-        cards[index].nums.join(", ");
-    } else {
-      document.getElementById("numbers").innerText = "";
-      document.getElementById("result").innerText =
-        "Your number is: " + total + " 🎉";
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #3b3b6d);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
-  }
 
-  function answer(yes) {
-    if (yes) total += cards[index].value;
-    index++;
-    showCard();
-  }
+    .card {
+      background: #111827;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 360px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      text-align: center;
+    }
 
-  showCard();
-</script>
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
 
+    p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    .numbers {
+      background: #1f2937;
+      padding: 12px;
+      border-radius: 12px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .yes {
+      background: #22c55e;
+      color: #062e14;
+      font-weight: 600;
+    }
+
+    .no {
+      background: #ef4444;
+      color: #450a0a;
+      font-weight: 600;
+    }
+
+    .result {
+      font-size: 1.3rem;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .restart {
+      background: #3b82f6;
+      color: #fff;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>🔮 Guess My Number</h1>
+    <p>Think of a number between <b>1 and 63</b>.</p>
+
+    <div id="game">
+      <div class="numbers" id="set"></div>
+
+      <p>Is your number here?</p>
+
+      <button class="yes" onclick="answer(true)">Yes</button>
+      <button class="no" onclick="answer(false)">No</button>
+    </div>
+
+    <div id="result" class="result" style="display:none;"></div>
+    <button id="restart" class="restart" style="display:none;" onclick="restart()">Play Again</button>
+  </div>
+
+  <script>
+    const sets = [
+      { value: 1, nums: [1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63] },
+      { value: 2, nums: [2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31,34,35,38,39,42,43,46,47,50,51,54,55,58,59,62,63] },
+      { value: 4, nums: [4,5,6,7,12,13,14,15,20,21,22,23,28,29,30,31,36,37,38,39,44,45,46,47,52,53,54,55,60,61,62,63] },
+      { value: 8, nums: [8,9,10,11,12,13,14,15,24,25,26,27,28,29,30,31,40,41,42,43,44,45,46,47,56,57,58,59,60,61,62,63] },
+      { value: 16, nums: [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63] },
+      { value: 32, nums: [32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63] }
+    ];
+
+    let index = 0;
+    let total = 0;
+
+    function showSet() {
+      document.getElementById("set").innerText = sets[index].nums.join(", ");
+    }
+
+    function answer(yes) {
+      if (yes) total += sets[index].value;
+      index++;
+
+      if (index < sets.length) {
+        showSet();
+      } else {
+        document.getElementById("game").style.display = "none";
+        document.getElementById("result").style.display = "block";
+        document.getElementById("restart").style.display = "block";
+        document.getElementById("result").innerText = "🎯 Your number is " + total;
+      }
+    }
+
+    function restart() {
+      index = 0;
+      total = 0;
+      document.getElementById("game").style.display = "block";
+      document.getElementById("result").style.display = "none";
+      document.getElementById("restart").style.display = "none";
+      showSet();
+    }
+
+    showSet();
+  </script>
 </body>
 </html>
