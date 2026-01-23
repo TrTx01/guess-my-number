@@ -1,112 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Guess My Number</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guess My Number</title>
 
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
 
-    .card {
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(10px);
-      border-radius: 18px;
-      padding: 22px;
-      max-width: 360px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-      animation: fadeIn 0.6s ease;
-    }
+.card {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 45px rgba(0,0,0,0.35);
+  animation: fadeIn 0.6s ease;
+}
 
-    h1 {
-      margin-top: 0;
-      font-size: 1.5rem;
-    }
+h1 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
 
-    .numbers {
-      font-size: 0.95rem;
-      margin: 14px 0;
-      line-height: 1.5;
-      animation: slideUp 0.4s ease;
-    }
+.instructions {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
 
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: transform 0.15s ease, background 0.15s ease;
-    }
+.numbers {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 14px 0;
+  animation: slideUp 0.4s ease;
+}
 
-    .yes {
-      background: #4CAF50;
-      color: white;
-    }
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
 
-    .no {
-      background: #f44336;
-      color: white;
-    }
+button:active {
+  transform: scale(0.94);
+}
 
-    button:active {
-      transform: scale(0.95);
-    }
+.yes {
+  background: #4CAF50;
+  color: white;
+}
 
-    #result {
-      font-size: 1.3rem;
-      margin-top: 18px;
-      animation: pop 0.5s ease;
-    }
+.no {
+  background: #f44336;
+  color: white;
+}
 
-    .share {
-      background: #25D366;
-      color: white;
-      margin-top: 14px;
-      width: 100%;
-    }
+.share {
+  background: #25D366;
+  color: white;
+  width: 100%;
+}
 
-    .counter {
-      opacity: 0.7;
-      font-size: 0.85rem;
-      margin-top: 16px;
-    }
+.play-again {
+  background: #ff9800;
+  color: white;
+  width: 100%;
+}
 
-    @keyframes pop {
-      0% { transform: scale(0.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
+#result {
+  font-size: 1.35rem;
+  margin: 18px 0;
+  animation: pop 0.5s ease;
+}
 
-    @keyframes slideUp {
-      from { transform: translateY(10px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
+.counter {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-top: 16px;
+}
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-  </style>
+@keyframes pop {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
 </head>
 
 <body>
 
 <div class="card">
   <h1>Think of a number</h1>
-  <p>between <strong>1 and 63 </strong> and from the set of numbers below, click Yes or No if you see it in the group. This would be repeated 6 times so that Tanuj can read your mind and make the guess. Best of Luck!</p>
-  <p>Is your number in this group?</p>
+
+  <div class="instructions">
+    Between <strong>1 and 63</strong> and from the set of numbers below,
+    click <strong>Yes</strong> or <strong>No</strong> if you see it in the group.
+    This will be repeated <strong>6 times</strong> so that
+    <strong>Tanuj can read your mind</strong> and make the guess.
+    <br><br>
+    <strong>Best of Luck!</strong>
+  </div>
 
   <div class="numbers" id="numbers"></div>
 
@@ -116,8 +134,7 @@
   </div>
 
   <div id="result"></div>
-
-  <button class="share" onclick="share()">Share on WhatsApp</button>
+  <div id="after"></div>
 
   <div class="counter" id="counter">
     This game has been played: …
@@ -125,63 +142,72 @@
 </div>
 
 <script>
-  // Binary cards
-  const cards = [
-    { value: 1, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&1) },
-    { value: 2, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&2) },
-    { value: 4, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&4) },
-    { value: 8, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&8) },
-    { value: 16, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&16) },
-    { value: 32, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&32) }
-  ];
+const cards = [
+  {v:1},{v:2},{v:4},{v:8},{v:16},{v:32}
+].map(c => ({
+  value: c.v,
+  nums: Array.from({length:63},(_,i)=>i+1).filter(n => n & c.v)
+}));
 
-  let index = 0;
-  let total = 0;
+let index = 0;
+let total = 0;
 
-  function show() {
-    document.getElementById("numbers").innerText =
-      cards[index].nums.join(", ");
+function show() {
+  document.getElementById("numbers").innerText =
+    cards[index].nums.join(", ");
+}
+
+function answer(yes) {
+  if (yes) total += cards[index].value;
+  index++;
+
+  if (index < cards.length) {
+    show();
+  } else {
+    reveal();
   }
+}
 
-  function answer(yes) {
-    if (yes) total += cards[index].value;
-    index++;
+function reveal() {
+  document.getElementById("controls").style.display = "none";
+  document.getElementById("numbers").style.display = "none";
 
-    if (index < cards.length) {
-      show();
-    } else {
-      reveal();
-    }
-  }
+  document.getElementById("result").innerHTML =
+    `🎉 I guessed it!<br><strong>Your number is ${total}</strong>`;
 
-  function reveal() {
-    document.getElementById("controls").style.display = "none";
-    document.getElementById("numbers").style.display = "none";
-    document.getElementById("result").innerHTML =
-      `🎉 I guessed it!<br><strong>Your number is ${total}</strong>`;
-  }
+  document.getElementById("after").innerHTML = `
+    <button class="share" onclick="share()">Share on WhatsApp</button>
+    <button class="play-again" onclick="location.reload()">Play Again</button>
+  `;
+}
 
-  function share() {
-    const text = `🤯 This website guessed my number!\nTry it yourself:\n${location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-  }
+function share() {
+  const text =
+    `🤯 This website guessed my number!\nTry it yourself:\n${location.href}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
 
-  // Global counter using CountAPI
-  const NAMESPACE = "trtx01-guess-my-number";
-  const KEY = "plays";
+/* -------- Global Play Counter -------- */
+const NAMESPACE = "trtx01-guess-my-number";
+const KEY = "plays";
 
-  fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("counter").innerText =
-        `This game has been played: ${data.value} times`;
-    })
-    .catch(() => {
-      document.getElementById("counter").innerText =
-        "This game has been played: many times 🙂";
-    });
+// Create counter if not exists
+fetch(`https://api.countapi.xyz/create?namespace=${NAMESPACE}&key=${KEY}&value=0`)
+  .catch(() => {});
 
-  show();
+// Increment counter
+fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`)
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("counter").innerText =
+      `This game has been played: ${data.value} times`;
+  })
+  .catch(() => {
+    document.getElementById("counter").innerText =
+      "This game has been played: many times 🙂";
+  });
+
+show();
 </script>
 
 </body>
