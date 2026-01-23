@@ -9,13 +9,21 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: #fff;
+    color: #ffffff;
     text-align: center;
     padding: 20px;
     margin: 0;
   }
 
   h1 { margin-bottom: 6px; }
+
+  .intro {
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 520px;
+    margin: 0 auto 10px;
+    opacity: 0.95;
+  }
 
   .card {
     background: rgba(255,255,255,0.12);
@@ -41,14 +49,28 @@
     border: none;
     margin: 8px;
     cursor: pointer;
+    color: #ffffff;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
     transition: transform 0.2s ease, opacity 0.2s ease;
   }
 
-  button:hover { transform: scale(1.05); opacity: 0.9; }
+  button:hover { transform: scale(1.05); opacity: 0.95; }
+  button:active { transform: scale(0.96); }
 
   .yes { background: #2ecc71; }
   .no { background: #e74c3c; }
-  .primary { background: #3498db; }
+
+  .primary {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  }
+
+  #playAgainBtn {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    box-shadow: 0 0 18px rgba(255,152,0,0.8);
+    animation: glowPulse 1.8s infinite;
+  }
 
   .result {
     font-size: 28px;
@@ -79,13 +101,24 @@
     0% { transform: scale(0.6); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
   }
+
+  @keyframes glowPulse {
+    0% { box-shadow: 0 0 10px rgba(255,152,0,0.5); }
+    50% { box-shadow: 0 0 26px rgba(255,152,0,1); }
+    100% { box-shadow: 0 0 10px rgba(255,152,0,0.5); }
+  }
 </style>
 </head>
 
 <body>
 
 <h1>🔮 Guess My Number</h1>
-<p>Think of a number between <b>1 and 63</b> and from the set below click Yes or No if your number is in it. This would be repeated 6 times so Tanuj can read your mind!</p>
+
+<p class="intro">
+  Think of a number between <b>1 and 63</b> and from the set below click
+  <b>Yes</b> or <b>No</b> if your number is in it.
+  This would be repeated <b>6 times</b> so <b>Tanuj can read your mind!</b>
+</p>
 
 <div id="game" class="card">
   <h3>Is your number in this set?</h3>
@@ -96,7 +129,7 @@
 
 <div id="result" class="result" style="display:none;"></div>
 
-<button id="playAgainBtn" class="primary" style="display:none;" onclick="playAgain()">
+<button id="playAgainBtn" style="display:none;" onclick="playAgain()">
   🔁 Play Again
 </button>
 
@@ -124,8 +157,7 @@
     projectId: "guess-my-number-f76c8",
     storageBucket: "guess-my-number-f76c8.firebasestorage.app",
     messagingSenderId: "969626383009",
-    appId: "1:969626383009:web:2a26feff9dd97d82a676e0",
-    measurementId: "G-804G8QVS2S"
+    appId: "1:969626383009:web:2a26feff9dd97d82a676e0"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -156,7 +188,6 @@
   ];
 
   let step = 0, guess = 0, finished = false;
-
   const clickSound = document.getElementById("clickSound");
   const winSound = document.getElementById("winSound");
 
@@ -201,7 +232,6 @@
     window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + location.href)}`);
   }
 
-  /* 🎉 Confetti */
   function launchConfetti() {
     const canvas = document.getElementById("confetti");
     const ctx = canvas.getContext("2d");
