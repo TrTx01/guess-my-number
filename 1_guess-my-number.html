@@ -15,7 +15,7 @@
     margin: 0;
   }
 
-  h1 { margin-bottom: 8px; }
+  h1 { margin-bottom: 6px; }
 
   .card {
     background: rgba(255,255,255,0.12);
@@ -31,7 +31,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     font-size: 18px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   button {
@@ -62,6 +62,14 @@
     opacity: 0.85;
   }
 
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
@@ -77,7 +85,7 @@
 <body>
 
 <h1>🔮 Guess My Number</h1>
-<p>Think of a number between <b>1 and 63 and from the set below click Yes or No is your number is in it. This would be repeated 6 times so Tanuj can read your mind!</b></p>
+<p>Think of a number between <b>1 and 63</b></p>
 
 <div id="game" class="card">
   <h3>Is your number in this set?</h3>
@@ -88,22 +96,27 @@
 
 <div id="result" class="result" style="display:none;"></div>
 
+<button id="playAgainBtn" class="primary" style="display:none;" onclick="playAgain()">
+  🔁 Play Again
+</button>
+
 <div class="counter">
   🌍 Played <b><span id="globalCount">0</span></b> times worldwide
 </div>
 
 <button class="primary" onclick="shareGame()">📤 Share on WhatsApp</button>
 
-<!-- ================= FIREBASE (MODULE MODE) ================= -->
+<canvas id="confetti"></canvas>
+
+<!-- 🔊 Retro Sounds -->
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+<audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3"></audio>
+
+<!-- ================= FIREBASE ================= -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import {
-    getFirestore,
-    doc,
-    updateDoc,
-    increment,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+  import { getFirestore, doc, updateDoc, increment, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCYpzNg633JTHQdym32TJpbzHRJStEVBZ4",
@@ -119,19 +132,15 @@
   const db = getFirestore(app);
   const counterRef = doc(db, "stats", "global");
 
-  // Live global counter
-  onSnapshot(counterRef, (snap) => {
+  onSnapshot(counterRef, snap => {
     if (snap.exists()) {
       document.getElementById("globalCount").innerText =
         snap.data().plays.toLocaleString();
     }
   });
 
-  // Expose to normal JS
-  window.incrementGlobalCounter = async function () {
-    await updateDoc(counterRef, {
-      plays: increment(1)
-    });
+  window.incrementGlobalCounter = async () => {
+    await updateDoc(counterRef, { plays: increment(1) });
   };
 </script>
 
@@ -146,9 +155,10 @@
     [32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]
   ];
 
-  let step = 0;
-  let guess = 0;
-  let finished = false;
+  let step = 0, guess = 0, finished = false;
+
+  const clickSound = document.getElementById("clickSound");
+  const winSound = document.getElementById("winSound");
 
   function showSet() {
     document.getElementById("numbers").innerHTML =
@@ -156,32 +166,70 @@
   }
 
   function answer(yes) {
+    clickSound.play();
     if (yes) guess += Math.pow(2, step);
     step++;
-
-    if (step < sets.length) {
-      showSet();
-    } else {
-      finishGame();
-    }
+    step < sets.length ? showSet() : finishGame();
   }
 
   function finishGame() {
     if (finished) return;
     finished = true;
 
+    winSound.play();
+    launchConfetti();
+
     document.getElementById("game").style.display = "none";
     document.getElementById("result").style.display = "block";
     document.getElementById("result").innerHTML =
       `🎉 I guessed it!<br><b>Your number is ${guess}</b>`;
 
+    document.getElementById("playAgainBtn").style.display = "inline-block";
     incrementGlobalCounter();
+  }
+
+  function playAgain() {
+    step = 0; guess = 0; finished = false;
+    document.getElementById("result").style.display = "none";
+    document.getElementById("playAgainBtn").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    showSet();
   }
 
   function shareGame() {
     const text = "I just played this mind-reading number game 😮 Try it!";
-    const url = window.location.href;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + location.href)}`);
+  }
+
+  /* 🎉 Confetti */
+  function launchConfetti() {
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    const pieces = Array.from({ length: 120 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 40,
+      color: `hsl(${Math.random() * 360},100%,50%)`
+    }));
+
+    let angle = 0;
+    (function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      angle += 0.01;
+      pieces.forEach(p => {
+        p.y += Math.cos(angle + p.d) + 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+      if (angle < 3) requestAnimationFrame(draw);
+      else ctx.clearRect(0,0,canvas.width,canvas.height);
+    })();
   }
 
   showSet();
