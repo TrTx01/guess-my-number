@@ -1,160 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Guess My Number</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guess My Number</title>
 
-<style>
-:root {
-  --bg1:#0f172a;
-  --bg2:#312e81;
-  --card:#020617;
-  --accent:#22c55e;
-  --danger:#ef4444;
-  --blue:#3b82f6;
-}
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
 
-body {
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2));
-  color:#fff;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
+    .card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      border-radius: 18px;
+      padding: 22px;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      animation: fadeIn 0.6s ease;
+    }
 
-.card {
-  background:var(--card);
-  width:92%;
-  max-width:380px;
-  padding:24px;
-  border-radius:20px;
-  box-shadow:0 30px 60px rgba(0,0,0,.5);
-  text-align:center;
-  animation:pop .6s ease;
-}
+    h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
 
-@keyframes pop {
-  from {transform:scale(.9);opacity:0}
-  to {transform:scale(1);opacity:1}
-}
+    .numbers {
+      font-size: 0.95rem;
+      margin: 14px 0;
+      line-height: 1.5;
+      animation: slideUp 0.4s ease;
+    }
 
-h1 {margin:0;font-size:1.6rem;}
-p {opacity:.85;font-size:.95rem;}
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
 
-.set {
-  background:#020617;
-  border-radius:14px;
-  padding:14px;
-  margin:18px 0;
-  font-size:.9rem;
-  line-height:1.6;
-  animation:slide .5s ease;
-}
+    .yes {
+      background: #4CAF50;
+      color: white;
+    }
 
-@keyframes slide {
-  from {transform:translateX(20px);opacity:0}
-  to {transform:translateX(0);opacity:1}
-}
+    .no {
+      background: #f44336;
+      color: white;
+    }
 
-button {
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  font-size:1rem;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-}
+    button:active {
+      transform: scale(0.95);
+    }
 
-.yes {background:var(--accent);color:#052e16;font-weight:700;}
-.no {background:var(--danger);color:#450a0a;font-weight:700;}
-.restart {background:var(--blue);color:#fff;}
+    #result {
+      font-size: 1.3rem;
+      margin-top: 18px;
+      animation: pop 0.5s ease;
+    }
 
-.reveal {
-  font-size:2rem;
-  margin-top:20px;
-  animation:reveal .8s ease;
-}
+    .share {
+      background: #25D366;
+      color: white;
+      margin-top: 14px;
+      width: 100%;
+    }
 
-@keyframes reveal {
-  0% {transform:scale(.6);opacity:0}
-  70% {transform:scale(1.2)}
-  100% {transform:scale(1);opacity:1}
-}
+    .counter {
+      opacity: 0.7;
+      font-size: 0.85rem;
+      margin-top: 16px;
+    }
 
-.whatsapp {
-  background:#25D366;
-  color:#052e16;
-  font-weight:700;
-}
-</style>
+    @keyframes pop {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
 </head>
 
 <body>
-<div class="card">
-  <h1>🔮 Guess My Number</h1>
-  <p>Think of a number between <b>1 and 63 and from the set of numbers below, click Yes or No if you see it in. This would be repeated 6 times so that Tanuj can read your mind and make the guess. Best of Luck!</b></p>
 
-  <div id="game">
-    <div id="set" class="set"></div>
-    <p>Is your number here?</p>
-    <button class="yes" onclick="answer(true)">Yes</button>
-    <button class="no" onclick="answer(false)">No</button>
+<div class="card">
+  <h1>Think of a number</h1>
+  <p>between <strong>1 and 63 </strong> and from the set of numbers below, click Yes or No if you see it in the group. This would be repeated 6 times so that Tanuj can read your mind and make the guess. Best of Luck!</p>
+  <p>Is your number in this group?</p>
+
+  <div class="numbers" id="numbers"></div>
+
+  <div id="controls">
+    <button class="yes" onclick="answer(true)">YES</button>
+    <button class="no" onclick="answer(false)">NO</button>
   </div>
 
-  <div id="result" style="display:none;">
-    <div class="reveal" id="final"></div>
-    <button class="whatsapp" onclick="share()">Share on WhatsApp</button>
-    <button class="restart" onclick="restart()">Play Again</button>
+  <div id="result"></div>
+
+  <button class="share" onclick="share()">Share on WhatsApp</button>
+
+  <div class="counter" id="counter">
+    This game has been played: …
   </div>
 </div>
 
 <script>
-const sets = [
- {v:1,n:[1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63]},
- {v:2,n:[2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31,34,35,38,39,42,43,46,47,50,51,54,55,58,59,62,63]},
- {v:4,n:[4,5,6,7,12,13,14,15,20,21,22,23,28,29,30,31,36,37,38,39,44,45,46,47,52,53,54,55,60,61,62,63]},
- {v:8,n:[8,9,10,11,12,13,14,15,24,25,26,27,28,29,30,31,40,41,42,43,44,45,46,47,56,57,58,59,60,61,62,63]},
- {v:16,n:[16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]},
- {v:32,n:[32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]}
-];
+  // Binary cards
+  const cards = [
+    { value: 1, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&1) },
+    { value: 2, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&2) },
+    { value: 4, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&4) },
+    { value: 8, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&8) },
+    { value: 16, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&16) },
+    { value: 32, nums: Array.from({length:63},(_,i)=>i+1).filter(n=>n&32) }
+  ];
 
-let i=0,total=0;
+  let index = 0;
+  let total = 0;
 
-function show(){
- document.getElementById("set").innerText=sets[i].n.join(", ");
-}
+  function show() {
+    document.getElementById("numbers").innerText =
+      cards[index].nums.join(", ");
+  }
 
-function answer(y){
- if(y) total+=sets[i].v;
- i++;
- if(i<sets.length) show();
- else reveal();
-}
+  function answer(yes) {
+    if (yes) total += cards[index].value;
+    index++;
 
-function reveal(){
- document.getElementById("game").style.display="none";
- document.getElementById("result").style.display="block";
- document.getElementById("final").innerText="🎯 I guessed it! Your number is " + total;
-}
+    if (index < cards.length) {
+      show();
+    } else {
+      reveal();
+    }
+  }
 
-function restart(){
- i=0; total=0;
- document.getElementById("result").style.display="none";
- document.getElementById("game").style.display="block";
- show();
-}
+  function reveal() {
+    document.getElementById("controls").style.display = "none";
+    document.getElementById("numbers").style.display = "none";
+    document.getElementById("result").innerHTML =
+      `🎉 I guessed it!<br><strong>Your number is ${total}</strong>`;
+  }
 
-function share(){
- const msg=`🤯 This magic game guessed my number!\nTry it yourself:\n${location.href}`;
- window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-}
+  function share() {
+    const text = `🤯 This website guessed my number!\nTry it yourself:\n${location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+  }
 
-show();
+  // Global counter using CountAPI
+  const NAMESPACE = "trtx01-guess-my-number";
+  const KEY = "plays";
+
+  fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("counter").innerText =
+        `This game has been played: ${data.value} times`;
+    })
+    .catch(() => {
+      document.getElementById("counter").innerText =
+        "This game has been played: many times 🙂";
+    });
+
+  show();
 </script>
+
 </body>
 </html>
