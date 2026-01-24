@@ -13,7 +13,6 @@
     text-align: center;
     padding: 20px;
     margin: 0;
-    overflow-x: hidden;
   }
 
   h1 { margin-bottom: 6px; }
@@ -31,7 +30,6 @@
     border-radius: 18px;
     margin: 20px auto;
     max-width: 420px;
-    animation: fadeIn 0.6s ease;
   }
 
   .numbers {
@@ -51,18 +49,18 @@
     cursor: pointer;
     color: #ffffff;
     font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
     transition: transform 0.15s ease;
   }
 
-  button:active {
-    transform: scale(0.94);
-  }
+  button:active { transform: scale(0.94); }
 
   .yes { background: #2ecc71; }
   .no { background: #e74c3c; }
 
   .primary {
     background: linear-gradient(135deg, #25d366, #128c7e);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
   }
 
   #playAgainBtn {
@@ -74,7 +72,6 @@
   .result {
     font-size: 28px;
     margin-top: 30px;
-    animation: pop 0.6s ease;
   }
 
   .counter {
@@ -85,34 +82,206 @@
 
   canvas {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* 🔥 FLASH OVERLAY (iOS-safe) */
+  #flash {
+    position: fixed;
+    inset: 0;
+    background: white;
+    opacity: 0;
     pointer-events: none;
     z-index: 999;
   }
 
-  /* 🔥 FLASH OVERLAY */
-  #flashOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(255,255,255,0.35);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 998;
+  #flash.active {
+    opacity: 0.65;
   }
 
-  .flash {
-    animation: flash 0.25s ease;
+  /* iOS visual haptic */
+  .tap-feedback {
+    animation: tapPulse 0.15s ease;
   }
 
-  @keyframes flash {
-    from { opacity: 1; }
-    to { opacity: 0; }
+  @keyframes tapPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes glowPulse {
+    0% { box-shadow: 0 0 10px rgba(255,152,0,0.5); }
+    50% { box-shadow: 0 0 26px rgba(255,152,0,1); }
+    100% { box-shadow: 0 0 10px rgba(255,152,0,0.5); }
+  }
+</style>
+</head>
+
+<body>
+
+<div id="flash"></div>
+
+<h1>🔮 Guess My Number</h1>
+
+<p class="intro">
+Think of a number between <b>1 and 63</b> and from the set below click
+<b>Yes</b> or <b>No</b> if your number is in it.
+This would be repeated <b>6 times</b> so <b>Tanuj can read your mind!</b>
+</p>
+
+<div id="game" class="card">
+  <h3>Is your number in this set?</h3>
+  <div id="numbers" class="numbers"></div>
+  <button class="yes" onclick="answer(true)">Yes</button>
+  <button class="no" onclick="answer(false)">No</button>
+</div>
+
+<div id="result" class="result" style="display:none;"></div>
+
+<button id="playAgainBtn" style="display:none;" onclick="playAgain()">🔁 Play Again</button>
+
+<div class="counter">
+  🌍 Played <b><span id="globalCount">0</span></b> times worldwide
+</div>
+
+<button class="primary" onclick="shareGame()">📤 Share on WhatsApp</button>
+
+<canvas id="confetti"></canvas>
+
+<!-- 🔊 Sounds -->
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+<audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3"></audio>
+
+<!-- 🔥 Firebase (Global Counter) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getFirestore, doc, updateDoc, increment, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+  const app = initializeApp({
+    apiKey: "AIzaSyCYpzNg633JTHQdym32TJpbzHRJStEVBZ4",
+    authDomain: "guess-my-number-f76c8.firebaseapp.com",
+    projectId: "guess-my-number-f76c8"
+  });
+
+  const db = getFirestore(app);
+  const ref = doc(db, "stats", "global");
+
+  onSnapshot(ref, snap => {
+    if (snap.exists()) {
+      document.getElementById("globalCount").innerText =
+        snap.data().plays.toLocaleString();
+    }
+  });
+
+  window.incrementGlobalCounter = () =>
+    updateDoc(ref, { plays: increment(1) });
+</script>
+
+<!-- 🎮 Game Logic -->
+<script>
+  const sets = [
+    [1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63],
+    [2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31,34,35,38,39,42,43,46,47,50,51,54,55,58,59,62,63],
+    [4,5,6,7,12,13,14,15,20,21,22,23,28,29,30,31,36,37,38,39,44,45,46,47,52,53,54,55,60,61,62,63],
+    [8,9,10,11,12,13,14,15,24,25,26,27,28,29,30,31,40,41,42,43,44,45,46,47,56,57,58,59,60,61,62,63],
+    [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63],
+    [32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]
+  ];
+
+  let step = 0, guess = 0;
+
+  function flash() {
+    const f = document.getElementById("flash");
+    f.classList.remove("active");
+    void f.offsetHeight; // iOS Safari reflow
+    f.classList.add("active");
+    setTimeout(() => f.classList.remove("active"), 120);
   }
 
-  @keyframes pop
+  function vibrate(ms = 50) {
+    if (navigator.vibrate) navigator.vibrate(ms); // Android only
+  }
+
+  function showSet() {
+    document.getElementById("numbers").innerHTML =
+      sets[step].map(n => `<div>${n}</div>`).join("");
+    flash();
+  }
+
+  function answer(yes) {
+    clickSound.currentTime = 0;
+    clickSound.play();
+
+    document.getElementById("game").classList.add("tap-feedback");
+    setTimeout(() => document.getElementById("game").classList.remove("tap-feedback"), 150);
+
+    vibrate();
+
+    if (yes) guess += 2 ** step;
+    step++;
+
+    step < sets.length ? showSet() : finishGame();
+  }
+
+  function finishGame() {
+    winSound.play();
+    vibrate([40,30,40]);
+    launchConfetti();
+
+    document.getElementById("game").style.display = "none";
+    document.getElementById("result").style.display = "block";
+    document.getElementById("result").innerHTML =
+      `🎉 I guessed it!<br><b>Your number is ${guess}</b>`;
+
+    document.getElementById("playAgainBtn").style.display = "inline-block";
+    incrementGlobalCounter();
+  }
+
+  function playAgain() {
+    step = 0; guess = 0;
+    document.getElementById("result").style.display = "none";
+    document.getElementById("playAgainBtn").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    showSet();
+  }
+
+  function shareGame() {
+    window.open(`https://wa.me/?text=${encodeURIComponent("Try this mind-reading number game 🤯 " + location.href)}`);
+  }
+
+  function launchConfetti() {
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    const pieces = Array.from({length:120},()=>({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      r:Math.random()*6+2,
+      c:`hsl(${Math.random()*360},100%,50%)`
+    }));
+
+    let t = 0;
+    (function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      pieces.forEach(p=>{
+        p.y+=2;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=p.c;
+        ctx.fill();
+      });
+      if(t++<90) requestAnimationFrame(draw);
+    })();
+  }
+
+  showSet();
+</script>
+
+</body>
+</html>
