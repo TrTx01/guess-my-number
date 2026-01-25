@@ -9,33 +9,30 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: #fff;
+    color: #ffffff;
     text-align: center;
-    padding: 16px;
+    padding: 20px;
     margin: 0;
+    overflow-x: hidden;
   }
 
   h1 { margin-bottom: 6px; }
 
   .intro {
     font-size: 15px;
-    line-height: 1.4;
+    line-height: 1.5;
     max-width: 520px;
-    margin: 0 auto 12px;
+    margin: 0 auto 10px;
+    opacity: 0.95;
   }
 
   .card {
     background: rgba(255,255,255,0.12);
-    padding: 18px;
+    padding: 20px;
     border-radius: 18px;
-    margin: 16px auto;
+    margin: 20px auto;
     max-width: 420px;
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
-  }
-
-  .card.pulse {
-    box-shadow: 0 0 0 4px rgba(46,204,113,0.9);
-    transform: scale(1.02);
+    animation: fadeIn 0.6s ease;
   }
 
   .numbers {
@@ -43,13 +40,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
     font-size: 17px;
-    margin: 12px 0 10px;
-  }
-
-  .numbers div {
-    background: rgba(255,255,255,0.15);
-    border-radius: 8px;
-    padding: 6px 0;
+    margin-bottom: 12px;
   }
 
   button {
@@ -57,34 +48,81 @@
     font-size: 16px;
     border-radius: 30px;
     border: none;
-    margin: 6px;
+    margin: 8px;
     cursor: pointer;
-    color: #fff;
-    font-weight: 600;
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 0 2px 3px rgba(0,0,0,0.6);
+    transition: transform 0.2s ease, opacity 0.2s ease;
   }
 
+  button:hover { transform: scale(1.05); opacity: 0.95; }
+  button:active { transform: scale(0.96); }
+
   .yes { background: #2ecc71; }
-  .no  { background: #e74c3c; }
+  .no { background: #e74c3c; }
 
   .primary {
     background: linear-gradient(135deg, #25d366, #128c7e);
-    margin-top: 10px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.45);
   }
 
   #playAgainBtn {
     background: linear-gradient(135deg, #ff9800, #ff5722);
-    margin-top: 14px;
+    box-shadow: 0 0 22px rgba(255,152,0,1);
+    animation: glowPulse 1.8s infinite;
   }
 
   .result {
-    font-size: 26px;
-    margin-top: 22px;
+    font-size: 28px;
+    margin-top: 30px;
+    animation: reveal 0.9s ease forwards;
+    opacity: 0;
   }
 
   .counter {
     margin-top: 18px;
-    font-size: 14px;
+    font-size: 15px;
     opacity: 0.9;
+  }
+
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.55);
+    z-index: 5000;
+    animation: flash 0.22s ease;
+    pointer-events: none;
+  }
+
+  @keyframes flash {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes reveal {
+    0% { transform: scale(0.7); opacity: 0; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes glowPulse {
+    0% { box-shadow: 0 0 10px rgba(255,152,0,0.6); }
+    50% { box-shadow: 0 0 28px rgba(255,152,0,1); }
+    100% { box-shadow: 0 0 10px rgba(255,152,0,0.6); }
   }
 </style>
 </head>
@@ -94,12 +132,13 @@
 <h1>🔮 Guess My Number</h1>
 
 <p class="intro">
-  Think of a number between <b>1 and 63</b>.  
-  If you see your number in the set below, tap <b>Yes</b>, otherwise tap <b>No</b>.
+  Think of a number between <b>1 and 63</b> and from the set below click
+  <b>Yes</b> or <b>No</b> if your number is in it.
+  This would be repeated <b>6 times</b> so <b>Tanuj can read your mind!</b>
 </p>
 
 <div id="game" class="card">
-  <h3>Is your number here?</h3>
+  <h3>Is your number in this set?</h3>
   <div id="numbers" class="numbers"></div>
   <button class="yes" onclick="answer(true)">Yes</button>
   <button class="no" onclick="answer(false)">No</button>
@@ -114,6 +153,8 @@
 </div>
 
 <button class="primary" onclick="shareGame()">📤 Share on WhatsApp</button>
+
+<canvas id="confetti"></canvas>
 
 <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3"></audio>
@@ -161,21 +202,29 @@
   let step = 0, guess = 0, finished = false;
   const clickSound = document.getElementById("clickSound");
   const winSound = document.getElementById("winSound");
-  const card = document.getElementById("game");
 
   function haptic(ms = 40) {
     if (navigator.vibrate) navigator.vibrate(ms);
+    else {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      o.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.03);
+    }
   }
 
-  function pulseCard() {
-    card.classList.add("pulse");
-    setTimeout(() => card.classList.remove("pulse"), 220);
+  function flashScreen() {
+    const f = document.createElement("div");
+    f.className = "flash-overlay";
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 250);
   }
 
   function showSet() {
     document.getElementById("numbers").innerHTML =
       sets[step].map(n => `<div>${n}</div>`).join("");
-    pulseCard();
+    flashScreen();
   }
 
   function answer(yes) {
@@ -191,10 +240,13 @@
     finished = true;
     haptic(120);
     winSound.play();
+    launchConfetti();
+
     document.getElementById("game").style.display = "none";
-    document.getElementById("result").style.display = "block";
-    document.getElementById("result").innerHTML =
-      `🎉 Your number is <b>${guess}</b>`;
+    const r = document.getElementById("result");
+    r.style.display = "block";
+    r.innerHTML = `🎉 I guessed it!<br><b>Your number is ${guess}</b>`;
+
     document.getElementById("playAgainBtn").style.display = "inline-block";
     incrementGlobalCounter();
   }
@@ -208,8 +260,38 @@
   }
 
   function shareGame() {
-    const text = "🤯 This game guessed my number! Try it:";
+    const text = "🤯 I just played this mind-reading number game. Try it!";
     window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + location.href)}`);
+  }
+
+  function launchConfetti() {
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    const pieces = Array.from({ length: 150 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 40,
+      c: `hsl(${Math.random()*360},100%,50%)`
+    }));
+
+    let t = 0;
+    (function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      t += 0.02;
+      pieces.forEach(p=>{
+        p.y += Math.cos(t+p.d)+3;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=p.c;
+        ctx.fill();
+      });
+      if(t<3) requestAnimationFrame(draw);
+      else ctx.clearRect(0,0,canvas.width,canvas.height);
+    })();
   }
 
   showSet();
