@@ -2,251 +2,259 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Guess My Number</title>
 
-<!-- PWA -->
-<link rel="manifest" href="data:application/manifest+json,{
-  &quot;name&quot;:&quot;Guess My Number&quot;,
-  &quot;short_name&quot;:&quot;Mind Reader&quot;,
-  &quot;display&quot;:&quot;standalone&quot;,
-  &quot;background_color&quot;:&quot;#0f2027&quot;,
-  &quot;theme_color&quot;:&quot;#0f2027&quot;
-}">
-<meta name="theme-color" content="#0f2027">
-
 <style>
-:root {
-  --bg: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  --card: rgba(255,255,255,0.15);
-  --text: #fff;
-}
+  :root {
+    --bg1: #0f2027;
+    --bg2: #203a43;
+    --bg3: #2c5364;
+    --card: rgba(255,255,255,0.12);
+    --yes: #2ecc71;
+    --no: #e74c3c;
+    --accent: #8be9fd;
+  }
 
-body.light {
-  --bg: linear-gradient(135deg,#f5f7fa,#c3cfe2);
-  --card: #ffffff;
-  --text: #111;
-}
+  * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont; }
 
-body {
-  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  text-align: center;
-  padding: 20px;
-  margin: 0;
-}
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+  }
 
-h1 { margin-bottom: 6px; }
+  .container {
+    max-width: 420px;
+    width: 95%;
+    text-align: center;
+  }
 
-.intro {
-  font-size: 15px;
-  max-width: 520px;
-  margin: 0 auto 10px;
-}
+  h1 {
+    margin-bottom: 8px;
+    font-size: 2rem;
+  }
 
-.step { font-size: 14px; opacity: 0.85; }
+  .subtitle {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 12px;
+  }
 
-.card {
-  background: var(--card);
-  padding: 20px;
-  border-radius: 18px;
-  margin: 20px auto;
-  max-width: 420px;
-  animation: slideIn 0.4s ease;
-}
+  .step {
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--accent);
+  }
 
-.numbers {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 10px;
-  margin-bottom: 14px;
-}
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
 
-button {
-  padding: 14px 24px;
-  font-size: 16px;
-  border-radius: 30px;
-  border: none;
-  margin: 6px;
-  cursor: pointer;
-  font-weight: 700;
-  color: #fff;
-}
+  .card.pulse {
+    animation: pulseSwap 0.35s ease;
+  }
 
-.yes { background:#2ecc71; }
-.no { background:#e74c3c; }
+  @keyframes pulseSwap {
+    0% { transform: scale(0.96); box-shadow: 0 0 0 rgba(255,255,255,0); }
+    50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(255,255,255,0.25); }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(255,255,255,0); }
+  }
 
-.primary {
-  background: linear-gradient(135deg,#25d366,#128c7e);
-}
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
 
-#playAgainBtn {
-  background: linear-gradient(135deg,#ff9800,#ff5722);
-  box-shadow: 0 0 22px rgba(255,152,0,1);
-  animation: glow 1.8s infinite;
-}
+  .buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
 
-.result { font-size: 28px; margin-top: 30px; }
+  button {
+    flex: 1;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 30px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+  }
 
-.thinking {
-  font-size: 20px;
-  margin-top: 30px;
-  animation: pulse 1.2s infinite;
-}
+  .yes { background: var(--yes); }
+  .no { background: var(--no); }
 
-.counter { margin-top: 18px; font-size: 14px; }
+  .result {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 24px 0;
+  }
 
-canvas {
-  position: fixed;
-  top:0; left:0;
-  pointer-events:none;
-}
+  .play-again {
+    background: linear-gradient(135deg, #00f260, #0575e6);
+    padding: 14px 26px;
+    border-radius: 30px;
+    font-weight: 800;
+    margin-top: 16px;
+    animation: glow 1.5s infinite alternate;
+  }
 
-.toggle {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: #00000055;
-}
+  @keyframes glow {
+    from { box-shadow: 0 0 10px rgba(0,242,96,0.5); }
+    to { box-shadow: 0 0 22px rgba(5,117,230,0.9); }
+  }
 
-@keyframes slideIn {
-  from { transform: translateX(40px); opacity:0; }
-  to { transform: translateX(0); opacity:1; }
-}
-@keyframes glow {
-  0%{box-shadow:0 0 10px orange}
-  50%{box-shadow:0 0 30px orange}
-}
-@keyframes pulse {
-  0%{opacity:.5}
-  50%{opacity:1}
-}
+  .footer {
+    margin-top: 18px;
+    opacity: 0.85;
+    font-size: 0.9rem;
+  }
+
 </style>
 </head>
 
 <body>
+<div class="container">
 
-<button class="toggle" onclick="toggleTheme()">🌓</button>
+  <h1>🔮 Guess My Number</h1>
+  <div class="subtitle">
+    Think of a number between 1 and 63 and from the set below click Yes or No if your number is in it.
+    This will be repeated 6 times so <b>Tanuj can read your mind!</b>
+  </div>
 
-<h1>🔮 Guess My Number</h1>
-<p class="intro">
-Think of a number between <b>1 and 63</b>.  
-Click <b>Yes</b> or <b>No</b> if your number is in the set.
-After 6 steps, <b>Tanuj will read your mind!</b>
-</p>
+  <div class="step" id="stepText"></div>
 
-<div class="step" id="stepIndicator">Step 1 of 6</div>
+  <div class="card" id="card">
+    <div class="grid" id="grid"></div>
+    <div class="buttons">
+      <button class="yes" onclick="answer(true)">Yes</button>
+      <button class="no" onclick="answer(false)">No</button>
+    </div>
+  </div>
 
-<div id="game" class="card">
-  <div id="numbers" class="numbers"></div>
-  <button class="yes" onclick="answer(true)">Yes</button>
-  <button class="no" onclick="answer(false)">No</button>
+  <div id="result"></div>
+
+  <button class="play-again" id="playAgain" onclick="resetGame()" style="display:none;">
+    🔁 Play Again
+  </button>
+
+  <div class="footer">
+    🌍 Played <span id="plays">44</span> times worldwide
+  </div>
+
 </div>
-
-<div id="thinking" class="thinking" style="display:none;">🧠 Reading your mind…</div>
-<div id="result" class="result" style="display:none;"></div>
-
-<button id="playAgainBtn" style="display:none;" onclick="playAgain()">🔁 Play Again</button>
-
-<div class="counter">
-🌍 Played <b><span id="globalCount">0</span></b> times worldwide
-</div>
-
-<button class="primary" onclick="shareGame()">📤 WhatsApp</button>
-<button class="primary" onclick="showQR()">📱 QR</button>
-
-<canvas id="confetti"></canvas>
-
-<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
-<audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.mp3"></audio>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getFirestore, doc, updateDoc, increment, onSnapshot }
-from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-
-const app = initializeApp({
-  apiKey:"AIzaSyCYpzNg633JTHQdym32TJpbzHRJStEVBZ4",
-  authDomain:"guess-my-number-f76c8.firebaseapp.com",
-  projectId:"guess-my-number-f76c8"
-});
-const db = getFirestore(app);
-const ref = doc(db,"stats","global");
-
-onSnapshot(ref,s=>{
-  if(s.exists()) globalCount.innerText=s.data().plays;
-});
-
-window.inc=()=>updateDoc(ref,{plays:increment(1)}).catch(()=>{});
-</script>
 
 <script>
-const sets=[...Array(6)].map((_,i)=>Array.from({length:32},(_,n)=>n+1).filter(n=>n&(1<<i)));
-let step=0,guess=0;
+  // --- GAME DATA ---
+  const sets = [
+    [1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31],
+    [2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31],
+    [4,5,6,7,12,13,14,15,20,21,22,23,28,29,30,31],
+    [8,9,10,11,12,13,14,15,24,25,26,27,28,29,30,31],
+    [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],
+    [32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47]
+  ];
 
-function vibrate(ms=30){navigator.vibrate?.(ms);}
-function speak(text){speechSynthesis.speak(new SpeechSynthesisUtterance(text));}
+  let step = 0;
+  let total = 0;
 
-function showSet(){
-  stepIndicator.innerText=`Step ${step+1} of 6`;
-  game.classList.remove("card"); void game.offsetWidth; game.classList.add("card");
-  numbers.innerHTML=sets[step].map(n=>`<div>${n}</div>`).join("");
-}
+  const grid = document.getElementById("grid");
+  const stepText = document.getElementById("stepText");
+  const card = document.getElementById("card");
+  const resultDiv = document.getElementById("result");
+  const playAgainBtn = document.getElementById("playAgain");
 
-function answer(y){
-  clickSound.play(); vibrate();
-  if(y) guess+=1<<step;
-  step++;
-  step<6?showSet():finish();
-}
+  function renderSet() {
+    grid.innerHTML = "";
+    sets[step].forEach(n => {
+      const d = document.createElement("div");
+      d.textContent = n;
+      grid.appendChild(d);
+    });
+    stepText.textContent = `Step ${step + 1} of 6`;
+    card.classList.remove("pulse");
+    void card.offsetWidth; // force reflow
+    card.classList.add("pulse");
+  }
 
-function finish(){
-  game.style.display="none";
-  thinking.style.display="block";
-  setTimeout(()=>{
-    thinking.style.display="none";
-    result.style.display="block";
-    result.innerHTML=`🎉 Your number is <b>${guess}</b>`;
-    speak(`Your number is ${guess}`);
-    playAgainBtn.style.display="inline-block";
-    winSound.play(); vibrate(120); confetti(); inc();
-  },1500);
-}
-
-function playAgain(){
-  step=guess=0;
-  result.style.display=playAgainBtn.style.display="none";
-  game.style.display="block";
-  showSet();
-}
-
-function confetti(){
-  const c=confettiCanvas=confetti;
-  const x=c.getContext("2d");
-  c.width=innerWidth; c.height=innerHeight;
-  let t=0;
-  (function draw(){
-    x.clearRect(0,0,c.width,c.height);
-    for(let i=0;i<120;i++){
-      x.fillStyle=`hsl(${i*3},100%,50%)`;
-      x.fillRect(Math.random()*c.width,Math.random()*c.height,5,5);
+  function haptic() {
+    if (navigator.vibrate) {
+      navigator.vibrate(25);
     }
-    if(t++<15) requestAnimationFrame(draw);
-  })();
-}
+  }
 
-function shareGame(){
-  open(`https://wa.me/?text=${encodeURIComponent("🤯 Try this mind reading game "+location.href)}`);
-}
+  function answer(yes) {
+    haptic();
+    if (yes) total += Math.pow(2, step);
+    step++;
 
-function showQR(){
-  open(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(location.href)}`);
-}
+    if (step < 6) {
+      renderSet();
+    } else {
+      endGame();
+    }
+  }
 
-function toggleTheme(){document.body.classList.toggle("light");}
+  function endGame() {
+    card.style.display = "none";
+    stepText.style.display = "none";
+    resultDiv.className = "result";
+    resultDiv.textContent = `🎉 Your number is ${total}!`;
+    playAgainBtn.style.display = "inline-block";
+    confetti();
+  }
 
-showSet();
+  function resetGame() {
+    step = 0;
+    total = 0;
+    card.style.display = "block";
+    stepText.style.display = "block";
+    resultDiv.textContent = "";
+    playAgainBtn.style.display = "none";
+    renderSet();
+  }
+
+  // --- CONFETTI ---
+  function confetti() {
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement("div");
+      c.style.position = "fixed";
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.top = "-10px";
+      c.style.width = "6px";
+      c.style.height = "6px";
+      c.style.background = `hsl(${Math.random()*360},100%,60%)`;
+      c.style.animation = "fall 2s linear forwards";
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 2000);
+    }
+  }
+
+  const style = document.createElement("style");
+  style.innerHTML = `
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // INIT
+  renderSet();
 </script>
 </body>
 </html>
