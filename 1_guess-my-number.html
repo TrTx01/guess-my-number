@@ -207,7 +207,10 @@
 
 <div class="container">
   <h1>MIND READER</h1>
-
+  
+  <p style="font-weight: 900; color: var(--secondary); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">
+    Think of a number between 1-63 and keep it in your mind. To start the game read below and and just click on YES or NO.
+  </p>
   <div class="progress-container">
     <div id="progressBar" class="progress-bar"></div>
   </div>
@@ -289,7 +292,7 @@
     updateProgress();
 
     if (step === 0) {
-        instr.innerHTML = "Check if your number appears in the set below and select <b>Yes</b> or <b>No</b>. We will repeat this for <b>5 more sets</b>. Once the scan is complete, I will guess your number.";
+        instr.innerHTML = "Check if your number appears in the set below and select <b>Yes</b> or <b>No</b>. We will repeat this for <b>5 more sets</b>, the program will guess your number.";
     } else {
         instr.innerHTML = `Is your number in this new set? <br>(<b>${6 - step}</b> sets remaining)`;
     }
